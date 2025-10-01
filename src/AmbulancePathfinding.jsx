@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Play, RotateCcw, Pause, SkipForward } from "lucide-react";
+import { Play, RotateCcw, Pause, SkipForward, Info, X } from "lucide-react";
 
 const AmbulancePathfinding = () => {
   const cityGraph = {
@@ -150,8 +150,8 @@ const AmbulancePathfinding = () => {
         ["R", 3],
         ["S", 6],
       ],
-      x: 360,
-      y: 370,
+      x: 480,
+      y: 350,
       name: "Jl. Pasar Minggu",
     },
     P: {
@@ -172,8 +172,8 @@ const AmbulancePathfinding = () => {
         ["P", 4],
         ["T", 3],
       ],
-      x: 420,
-      y: 160,
+      x: 350,
+      y: 190,
       name: "Jl. Cawang",
     },
     R: {
@@ -207,6 +207,12 @@ const AmbulancePathfinding = () => {
       y: 200,
       name: "Rumah Sakit",
     },
+    Z: {
+      neighbors: [],
+      x: 550,
+      y: 250,
+      name: "Kota Lain",
+    },
   };
 
   const [openList, setOpenList] = useState([]);
@@ -221,6 +227,7 @@ const AmbulancePathfinding = () => {
   const [stats, setStats] = useState({ nodesExpanded: 0, totalDistance: 0 });
   const [startNode, setStartNode] = useState("A");
   const [goalNode, setGoalNode] = useState("T");
+  const [showLegend, setShowLegend] = useState(true);
 
   const heuristic = (node, goal = null) => {
     const targetGoal = goal || goalNode;
@@ -572,10 +579,10 @@ const AmbulancePathfinding = () => {
                       y={midY + 4}
                       textAnchor="middle"
                       fill={isInPath ? "#ffffff" : "#374151"}
-                      fontSize="10"
+                      fontSize="8"
                       fontWeight="bold"
                     >
-                      {distance}
+                      {distance} km
                     </text>
                   </g>
                 );
@@ -675,3 +682,4 @@ const AmbulancePathfinding = () => {
 };
 
 export default AmbulancePathfinding;
+``;
