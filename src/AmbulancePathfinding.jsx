@@ -361,7 +361,7 @@ const AmbulancePathfinding = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-xl p-6 mb-6 text-white">
+      {/* <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-xl p-6 mb-6 text-white">
         <h2 className="text-2xl font-bold mb-4">
           📐 Fungsi Heuristik - Jarak Euclidean
         </h2>
@@ -427,7 +427,7 @@ const AmbulancePathfinding = () => {
             memilih node yang "terlihat" paling dekat.
           </p>
         </div>
-      </div>
+      </div> */}
 
       <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
