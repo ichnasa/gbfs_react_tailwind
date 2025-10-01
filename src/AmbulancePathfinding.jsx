@@ -649,34 +649,44 @@ const AmbulancePathfinding = () => {
               );
             })}
           </svg>
+          <button
+            onClick={() => setShowLegend((prev) => !prev)}
+            className="absolute top-4 left-4 bg-gray-600 p-2 rounded text-white text-xs font-semibold"
+          >
+            Hide Legends
+          </button>
+          {showLegend ? (
+            <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md text-sm">
+              <div className="font-semibold mb-2">Keterangan:</div>
 
-          <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md text-sm">
-            <div className="font-semibold mb-2">Keterangan:</div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-4 h-4 rounded-full bg-blue-600"></div>
-              <span>Start</span>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-4 h-4 rounded-full bg-blue-600"></div>
+                <span>Start</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-4 h-4 rounded-full bg-red-600"></div>
+                <span>Goal</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                <span>Node saat ini</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-4 h-4 rounded-full bg-purple-600"></div>
+                <span>Tetangga Baru</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-4 h-4 rounded-full bg-cyan-500"></div>
+                <span>Dikunjungi</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-green-600"></div>
+                <span>Jalur</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-4 h-4 rounded-full bg-red-600"></div>
-              <span>Goal</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-              <span>Node saat ini</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-4 h-4 rounded-full bg-purple-600"></div>
-              <span>Tetangga Baru</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-4 h-4 rounded-full bg-cyan-500"></div>
-              <span>Dikunjungi</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-green-600"></div>
-              <span>Jalur</span>
-            </div>
-          </div>
+          ) : (
+            ""
+          )}
         </div>
 
         <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
