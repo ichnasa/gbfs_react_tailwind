@@ -289,8 +289,10 @@ const AmbulancePathfinding = () => {
     const remaining = sorted.slice(1);
 
     setCurrentNode(current.node);
-    setOpenList(remaining);
-    setVisitedList((prev) => [...prev, current.node]);
+
+    // Update visited list dengan current node
+    const newVisitedList = [...visitedList, current.node];
+    setVisitedList(newVisitedList);
 
     setStepLog((prev) => [
       ...prev,
@@ -300,6 +302,7 @@ const AmbulancePathfinding = () => {
     ]);
 
     if (current.node === goalNode) {
+      setOpenList([]);
       const { pathNodes, totalDist } = reconstructPath(parentMap, goalNode);
       setPath(pathNodes);
       setCurrentNeighbors([]);
@@ -320,11 +323,13 @@ const AmbulancePathfinding = () => {
     const newNeighbors = [];
     let expanded = 0;
 
+    // Proses tetangga dari current node
     cityGraph[current.node].neighbors.forEach(([neighbor, distance]) => {
-      if (
-        !visitedList.includes(neighbor) &&
-        !sorted.some((n) => n.node === neighbor)
-      ) {
+      // Cek apakah neighbor sudah dikunjungi atau sudah ada di open list
+      const alreadyVisited = newVisitedList.includes(neighbor);
+      const alreadyInOpenList = newOpenList.some((n) => n.node === neighbor);
+
+      if (!alreadyVisited && !alreadyInOpenList) {
         const h = heuristic(neighbor);
         newOpenList.push({ node: neighbor, h, g: current.g + distance });
         newParentMap[neighbor] = current.node;
@@ -344,6 +349,11 @@ const AmbulancePathfinding = () => {
         `  ➕ Menambahkan ${expanded} tetangga ke open list: ${newNeighbors.join(
           ", "
         )}`,
+      ]);
+    } else {
+      setStepLog((prev) => [
+        ...prev,
+        `  ℹ️  Tidak ada tetangga baru yang ditambahkan (semua sudah dikunjungi/di open list)`,
       ]);
     }
   };
