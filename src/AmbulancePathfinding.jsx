@@ -653,7 +653,7 @@ const AmbulancePathfinding = () => {
             onClick={() => setShowLegend((prev) => !prev)}
             className="absolute top-4 left-4 bg-gray-600 p-2 rounded text-white text-xs font-semibold"
           >
-            Hide Legends
+            {showLegend ? "Hide" : "Show"}
           </button>
           {showLegend ? (
             <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md text-sm">
