@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Play, RotateCcw, Pause, SkipForward } from "lucide-react";
 
 const AmbulancePathfinding = () => {
-  // Graf kota - 20 node dengan koneksi
   const cityGraph = {
     A: {
       neighbors: [
@@ -223,7 +222,6 @@ const AmbulancePathfinding = () => {
   const [startNode, setStartNode] = useState("A");
   const [goalNode, setGoalNode] = useState("T");
 
-  // Fungsi heuristik - Jarak Euclidean
   const heuristic = (node, goal = null) => {
     const targetGoal = goal || goalNode;
     const n = cityGraph[node];
@@ -233,7 +231,6 @@ const AmbulancePathfinding = () => {
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // Reset algoritma
   const reset = () => {
     setOpenList([{ node: startNode, h: heuristic(startNode), g: 0 }]);
     setVisitedList([]);
@@ -249,7 +246,6 @@ const AmbulancePathfinding = () => {
     setStats({ nodesExpanded: 0, totalDistance: 0 });
   };
 
-  // Rekonstruksi path
   const reconstructPath = (parents, goal) => {
     const pathNodes = [];
     let current = goal;
@@ -270,7 +266,6 @@ const AmbulancePathfinding = () => {
     return { pathNodes, totalDist };
   };
 
-  // Satu langkah GBFS
   const step = () => {
     if (openList.length === 0) {
       setStepLog((prev) => [
@@ -282,7 +277,6 @@ const AmbulancePathfinding = () => {
       return;
     }
 
-    // Sort by h(n) - greedy!
     const sorted = [...openList].sort((a, b) => a.h - b.h);
     const current = sorted[0];
     const remaining = sorted.slice(1);
@@ -298,7 +292,6 @@ const AmbulancePathfinding = () => {
       }) - h(n) = ${current.h.toFixed(2)}`,
     ]);
 
-    // Goal test
     if (current.node === goalNode) {
       const { pathNodes, totalDist } = reconstructPath(parentMap, goalNode);
       setPath(pathNodes);
@@ -315,7 +308,6 @@ const AmbulancePathfinding = () => {
       return;
     }
 
-    // Ekspansi neighbors
     const newParentMap = { ...parentMap };
     const newOpenList = [...remaining];
     const newNeighbors = [];
@@ -349,7 +341,6 @@ const AmbulancePathfinding = () => {
     }
   };
 
-  // Auto-run
   useEffect(() => {
     if (isRunning && !isComplete) {
       const timer = setTimeout(step, 1000);
@@ -357,14 +348,12 @@ const AmbulancePathfinding = () => {
     }
   }, [isRunning, isComplete, openList, visitedList]);
 
-  // Inisialisasi
   useEffect(() => {
     reset();
   }, [startNode, goalNode]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Penjelasan Heuristik */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-xl p-6 mb-6 text-white">
         <h2 className="text-2xl font-bold mb-4">
           📐 Fungsi Heuristik - Jarak Euclidean
@@ -441,7 +430,6 @@ const AmbulancePathfinding = () => {
           Implementasi Greedy Best-First Search
         </p>
 
-        {/* Node Selection */}
         <div className="grid md:grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -488,7 +476,6 @@ const AmbulancePathfinding = () => {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => setIsRunning(!isRunning)}
@@ -517,7 +504,6 @@ const AmbulancePathfinding = () => {
           </button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-100 p-4 rounded-lg">
             <div className="text-sm text-gray-600">Nodes Diekspansi</div>
@@ -539,13 +525,12 @@ const AmbulancePathfinding = () => {
           </div>
         </div>
 
-        {/* Visualization */}
         <div
           className="bg-gray-50 rounded-lg p-4 mb-6 relative"
           style={{ height: "450px" }}
         >
           <svg width="100%" height="100%" viewBox="0 0 530 400">
-            {/* Edges */}
+            {/* Edges dengan bobot */}
             {Object.entries(cityGraph).map(([nodeId, nodeData]) =>
               nodeData.neighbors.map(([neighborId, distance]) => {
                 const neighbor = cityGraph[neighborId];
@@ -556,40 +541,63 @@ const AmbulancePathfinding = () => {
                   Math.abs(path.indexOf(nodeId) - path.indexOf(neighborId)) ===
                     1;
 
+                const midX = (nodeData.x + neighbor.x) / 2;
+                const midY = (nodeData.y + neighbor.y) / 2;
+
                 return (
-                  <line
-                    key={`${nodeId}-${neighborId}`}
-                    x1={nodeData.x}
-                    y1={nodeData.y}
-                    x2={neighbor.x}
-                    y2={neighbor.y}
-                    stroke={isInPath ? "#10b981" : "#d1d5db"}
-                    strokeWidth={isInPath ? 4 : 2}
-                    opacity={0.6}
-                  />
+                  <g key={`${nodeId}-${neighborId}`}>
+                    <line
+                      x1={nodeData.x}
+                      y1={nodeData.y}
+                      x2={neighbor.x}
+                      y2={neighbor.y}
+                      stroke={isInPath ? "#10b981" : "#d1d5db"}
+                      strokeWidth={isInPath ? 4 : 2}
+                      opacity={0.6}
+                    />
+                    {/* Label bobot edge */}
+                    <rect
+                      x={midX - 12}
+                      y={midY - 8}
+                      width="24"
+                      height="16"
+                      fill={isInPath ? "#10b981" : "#ffffff"}
+                      stroke={isInPath ? "#059669" : "#9ca3af"}
+                      strokeWidth="1"
+                      rx="3"
+                      opacity="0.95"
+                    />
+                    <text
+                      x={midX}
+                      y={midY + 4}
+                      textAnchor="middle"
+                      fill={isInPath ? "#ffffff" : "#374151"}
+                      fontSize="10"
+                      fontWeight="bold"
+                    >
+                      {distance}
+                    </text>
+                  </g>
                 );
               })
             )}
 
             {/* Nodes */}
             {Object.entries(cityGraph).map(([nodeId, nodeData]) => {
-              //   const isStart = nodeId === "A";
               const isStart = nodeId === startNode;
-              //   const isGoal = nodeId === "T";
               const isGoal = nodeId === goalNode;
               const isCurrent = currentNode === nodeId;
               const isVisited = visitedList.includes(nodeId);
               const isCurrentNeighbor = currentNeighbors.includes(nodeId);
               const isInPath = path.includes(nodeId);
 
-              let fillColor = "#9ca3af"; // default gray
-              if (isStart) fillColor = "#3b82f6"; // blue
-              else if (isGoal) fillColor = "#ef4444"; // red
-              else if (isCurrent) fillColor = "#f59e0b"; // orange
-              else if (isInPath) fillColor = "#10b981"; // green
-              else if (isCurrentNeighbor)
-                fillColor = "#8b5cf6"; // purple - HANYA tetangga baru
-              else if (isVisited) fillColor = "#00bcd4"; // cyan
+              let fillColor = "#9ca3af";
+              if (isStart) fillColor = "#3b82f6";
+              else if (isGoal) fillColor = "#ef4444";
+              else if (isCurrent) fillColor = "#f59e0b";
+              else if (isInPath) fillColor = "#10b981";
+              else if (isCurrentNeighbor) fillColor = "#8b5cf6";
+              else if (isVisited) fillColor = "#00bcd4";
 
               return (
                 <g key={nodeId}>
@@ -610,7 +618,6 @@ const AmbulancePathfinding = () => {
                     fontWeight="bold"
                   >
                     {nodeId}
-                    {/* {nodeId == goalNode ? "🏥" : nodeId == startNode ? "🚑" : nodeId} */}
                   </text>
                   <text
                     x={nodeData.x}
@@ -626,7 +633,6 @@ const AmbulancePathfinding = () => {
             })}
           </svg>
 
-          {/* Legend */}
           <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md text-sm">
             <div className="font-semibold mb-2">Keterangan:</div>
             <div className="flex items-center gap-2 mb-1">
@@ -656,7 +662,6 @@ const AmbulancePathfinding = () => {
           </div>
         </div>
 
-        {/* Log */}
         <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
           {stepLog.map((log, idx) => (
             <div key={idx} className="mb-1">
