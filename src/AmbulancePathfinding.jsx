@@ -1,215 +1,215 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, RotateCcw, Pause, SkipForward } from "lucide-react";
 
-const AmbulancePathfinding = () => {
-  const cityGraph = {
-    A: {
-      neighbors: [
-        ["B", 4],
-        ["C", 3],
-        ["D", 5],
-      ],
-      x: 50,
-      y: 200,
-      name: "Lokasi Ambulans",
-    },
-    B: {
-      neighbors: [
-        ["A", 4],
-        ["E", 6],
-        ["F", 3],
-      ],
-      x: 120,
-      y: 150,
-      name: "Jl. Sudirman",
-    },
-    C: {
-      neighbors: [
-        ["A", 3],
-        ["F", 4],
-        ["G", 5],
-      ],
-      x: 120,
-      y: 250,
-      name: "Jl. Thamrin",
-    },
-    D: {
-      neighbors: [
-        ["A", 5],
-        ["E", 3],
-        ["H", 4],
-      ],
-      x: 120,
-      y: 50,
-      name: "Jl. Gatot Subroto",
-    },
-    E: {
-      neighbors: [
-        ["B", 6],
-        ["D", 3],
-        ["I", 5],
-      ],
-      x: 200,
-      y: 100,
-      name: "Jl. Rasuna Said",
-    },
-    F: {
-      neighbors: [
-        ["B", 3],
-        ["C", 4],
-        ["J", 6],
-      ],
-      x: 200,
-      y: 200,
-      name: "Jl. HR Rasuna",
-    },
-    G: {
-      neighbors: [
-        ["C", 5],
-        ["J", 3],
-        ["K", 4],
-      ],
-      x: 200,
-      y: 300,
-      name: "Jl. Kuningan",
-    },
-    H: {
-      neighbors: [
-        ["D", 4],
-        ["I", 5],
-        ["L", 3],
-      ],
-      x: 200,
-      y: 30,
-      name: "Jl. Casablanca",
-    },
-    I: {
-      neighbors: [
-        ["E", 5],
-        ["H", 5],
-        ["M", 4],
-      ],
-      x: 280,
-      y: 80,
-      name: "Jl. MT Haryono",
-    },
-    J: {
-      neighbors: [
-        ["F", 6],
-        ["G", 3],
-        ["N", 5],
-      ],
-      x: 280,
-      y: 250,
-      name: "Jl. Mampang",
-    },
-    K: {
-      neighbors: [
-        ["G", 4],
-        ["N", 6],
-        ["O", 5],
-      ],
-      x: 280,
-      y: 350,
-      name: "Jl. Pancoran",
-    },
-    L: {
-      neighbors: [
-        ["H", 3],
-        ["M", 4],
-        ["P", 6],
-      ],
-      x: 280,
-      y: 20,
-      name: "Jl. Cikini",
-    },
-    M: {
-      neighbors: [
-        ["I", 4],
-        ["L", 4],
-        ["P", 3],
-        ["Q", 5],
-      ],
-      x: 330,
-      y: 120,
-      name: "Jl. Salemba",
-    },
-    N: {
-      neighbors: [
-        ["J", 5],
-        ["K", 6],
-        ["R", 4],
-      ],
-      x: 360,
-      y: 280,
-      name: "Jl. Tebet",
-    },
-    O: {
-      neighbors: [
-        ["K", 5],
-        ["R", 3],
-        ["S", 6],
-      ],
-      x: 480,
-      y: 350,
-      name: "Jl. Pasar Minggu",
-    },
-    P: {
-      neighbors: [
-        ["L", 6],
-        ["M", 3],
-        ["Q", 4],
-        ["S", 7],
-        ["T", 5],
-      ],
-      x: 400,
-      y: 80,
-      name: "Jl. Matraman",
-    },
-    Q: {
-      neighbors: [
-        ["M", 5],
-        ["P", 4],
-        ["T", 3],
-      ],
-      x: 350,
-      y: 190,
-      name: "Jl. Cawang",
-    },
-    R: {
-      neighbors: [
-        ["N", 4],
-        ["O", 3],
-        ["S", 5],
-      ],
-      x: 430,
-      y: 320,
-      name: "Jl. Ragunan",
-    },
-    S: {
-      neighbors: [
-        ["O", 6],
-        ["P", 7],
-        ["R", 5],
-        ["T", 4],
-      ],
-      x: 450,
-      y: 240,
-      name: "Jl. Kalibata",
-    },
-    T: {
-      neighbors: [
-        ["P", 5],
-        ["Q", 3],
-        ["S", 4],
-      ],
-      x: 480,
-      y: 200,
-      name: "Rumah Sakit",
-    },
-    Z: { neighbors: [], x: 550, y: 250, name: "Kota Lain" },
-  };
+const cityGraph = {
+  A: {
+    neighbors: [
+      ["B", 4],
+      ["C", 3],
+      ["D", 5],
+    ],
+    x: 50,
+    y: 200,
+    name: "Lokasi Ambulans",
+  },
+  B: {
+    neighbors: [
+      ["A", 4],
+      ["E", 6],
+      ["F", 3],
+    ],
+    x: 120,
+    y: 150,
+    name: "Jl. Sudirman",
+  },
+  C: {
+    neighbors: [
+      ["A", 3],
+      ["F", 4],
+      ["G", 5],
+    ],
+    x: 120,
+    y: 250,
+    name: "Jl. Thamrin",
+  },
+  D: {
+    neighbors: [
+      ["A", 5],
+      ["E", 3],
+      ["H", 4],
+    ],
+    x: 120,
+    y: 50,
+    name: "Jl. Gatot Subroto",
+  },
+  E: {
+    neighbors: [
+      ["B", 6],
+      ["D", 3],
+      ["I", 5],
+    ],
+    x: 200,
+    y: 100,
+    name: "Jl. Rasuna Said",
+  },
+  F: {
+    neighbors: [
+      ["B", 3],
+      ["C", 4],
+      ["J", 6],
+    ],
+    x: 200,
+    y: 200,
+    name: "Jl. HR Rasuna",
+  },
+  G: {
+    neighbors: [
+      ["C", 5],
+      ["J", 3],
+      ["K", 4],
+    ],
+    x: 200,
+    y: 300,
+    name: "Jl. Kuningan",
+  },
+  H: {
+    neighbors: [
+      ["D", 4],
+      ["I", 5],
+      ["L", 3],
+    ],
+    x: 200,
+    y: 30,
+    name: "Jl. Casablanca",
+  },
+  I: {
+    neighbors: [
+      ["E", 5],
+      ["H", 5],
+      ["M", 4],
+    ],
+    x: 280,
+    y: 80,
+    name: "Jl. MT Haryono",
+  },
+  J: {
+    neighbors: [
+      ["F", 6],
+      ["G", 3],
+      ["N", 5],
+    ],
+    x: 280,
+    y: 250,
+    name: "Jl. Mampang",
+  },
+  K: {
+    neighbors: [
+      ["G", 4],
+      ["N", 6],
+      ["O", 5],
+    ],
+    x: 280,
+    y: 350,
+    name: "Jl. Pancoran",
+  },
+  L: {
+    neighbors: [
+      ["H", 3],
+      ["M", 4],
+      ["P", 6],
+    ],
+    x: 280,
+    y: 20,
+    name: "Jl. Cikini",
+  },
+  M: {
+    neighbors: [
+      ["I", 4],
+      ["L", 4],
+      ["P", 3],
+      ["Q", 5],
+    ],
+    x: 330,
+    y: 120,
+    name: "Jl. Salemba",
+  },
+  N: {
+    neighbors: [
+      ["J", 5],
+      ["K", 6],
+      ["R", 4],
+    ],
+    x: 360,
+    y: 280,
+    name: "Jl. Tebet",
+  },
+  O: {
+    neighbors: [
+      ["K", 5],
+      ["R", 3],
+      ["S", 6],
+    ],
+    x: 480,
+    y: 350,
+    name: "Jl. Pasar Minggu",
+  },
+  P: {
+    neighbors: [
+      ["L", 6],
+      ["M", 3],
+      ["Q", 4],
+      ["S", 7],
+      ["T", 5],
+    ],
+    x: 400,
+    y: 80,
+    name: "Jl. Matraman",
+  },
+  Q: {
+    neighbors: [
+      ["M", 5],
+      ["P", 4],
+      ["T", 3],
+    ],
+    x: 350,
+    y: 190,
+    name: "Jl. Cawang",
+  },
+  R: {
+    neighbors: [
+      ["N", 4],
+      ["O", 3],
+      ["S", 5],
+    ],
+    x: 430,
+    y: 320,
+    name: "Jl. Ragunan",
+  },
+  S: {
+    neighbors: [
+      ["O", 6],
+      ["P", 7],
+      ["R", 5],
+      ["T", 4],
+    ],
+    x: 450,
+    y: 240,
+    name: "Jl. Kalibata",
+  },
+  T: {
+    neighbors: [
+      ["P", 5],
+      ["Q", 3],
+      ["S", 4],
+    ],
+    x: 480,
+    y: 200,
+    name: "Rumah Sakit",
+  },
+  Z: { neighbors: [], x: 550, y: 250, name: "Kota Lain" },
+};
 
+const AmbulancePathfinding = () => {
   const [openList, setOpenList] = useState([]);
   const [visitedList, setVisitedList] = useState([]);
   const [currentNode, setCurrentNode] = useState(null);
@@ -266,7 +266,7 @@ const AmbulancePathfinding = () => {
     setOffset({ x: 0, y: 0 });
   };
 
-  // --- GBFS logic ---
+  // Logika GBFS
   const heuristic = (node, goal = null) => {
     const targetGoal = goal || goalNode;
     const n = cityGraph[node];
@@ -289,7 +289,6 @@ const AmbulancePathfinding = () => {
       `Greedy-Best First Search dimulai. Node ${startNode} (${cityGraph[startNode].name}) sebagai start node ditambahkan ke open list.`,
     ]);
     setStats({ nodesExpanded: 0, totalDistance: 0 });
-    // juga reset viewport agar adil setiap run
     resetView();
   };
 
