@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Play, RotateCcw, Pause, SkipForward, Info, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Play, RotateCcw, Pause, SkipForward } from "lucide-react";
 
 const AmbulancePathfinding = () => {
   const cityGraph = {
@@ -207,12 +207,7 @@ const AmbulancePathfinding = () => {
       y: 200,
       name: "Rumah Sakit",
     },
-    Z: {
-      neighbors: [],
-      x: 550,
-      y: 250,
-      name: "Kota Lain",
-    },
+    Z: { neighbors: [], x: 550, y: 250, name: "Kota Lain" },
   };
 
   const [openList, setOpenList] = useState([]);
@@ -229,6 +224,49 @@ const AmbulancePathfinding = () => {
   const [goalNode, setGoalNode] = useState("T");
   const [showLegend, setShowLegend] = useState(true);
 
+  // --- Zoom & Pan state ---
+  const [zoom, setZoom] = useState(1); // 1 = 100%
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const svgRef = useRef(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef({ x: 0, y: 0 });
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.9 : 1.1; // scroll down: zoom out, scroll up: zoom in
+    setZoom((z) => clamp(z * factor, 0.4, 4));
+  };
+
+  const toSvgPoint = (e) => {
+    const pt = svgRef.current.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    return pt.matrixTransform(svgRef.current.getScreenCTM().inverse());
+  };
+
+  const handleMouseDown = (e) => {
+    setIsPanning(true);
+    const p = toSvgPoint(e);
+    panStart.current = { x: p.x - offset.x, y: p.y - offset.y };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isPanning) return;
+    const p = toSvgPoint(e);
+    setOffset({ x: p.x - panStart.current.x, y: p.y - panStart.current.y });
+  };
+
+  const endPan = () => setIsPanning(false);
+
+  const zoomIn = () => setZoom((z) => clamp(z * 1.2, 0.4, 4));
+  const zoomOut = () => setZoom((z) => clamp(z / 1.2, 0.4, 4));
+  const resetView = () => {
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+  };
+
+  // --- GBFS logic ---
   const heuristic = (node, goal = null) => {
     const targetGoal = goal || goalNode;
     const n = cityGraph[node];
@@ -251,6 +289,8 @@ const AmbulancePathfinding = () => {
       `Greedy-Best First Search dimulai. Node ${startNode} (${cityGraph[startNode].name}) sebagai start node ditambahkan ke open list.`,
     ]);
     setStats({ nodesExpanded: 0, totalDistance: 0 });
+    // juga reset viewport agar adil setiap run
+    resetView();
   };
 
   const reconstructPath = (parents, goal) => {
@@ -269,7 +309,6 @@ const AmbulancePathfinding = () => {
         break;
       }
     }
-
     return { pathNodes, totalDist };
   };
 
@@ -290,7 +329,6 @@ const AmbulancePathfinding = () => {
 
     setCurrentNode(current.node);
 
-    // Update visited list dengan current node
     const newVisitedList = [...visitedList, current.node];
     setVisitedList(newVisitedList);
 
@@ -323,9 +361,7 @@ const AmbulancePathfinding = () => {
     const newNeighbors = [];
     let expanded = 0;
 
-    // Proses tetangga dari current node
     cityGraph[current.node].neighbors.forEach(([neighbor, distance]) => {
-      // Cek apakah neighbor sudah dikunjungi atau sudah ada di open list
       const alreadyVisited = newVisitedList.includes(neighbor);
       const alreadyInOpenList = newOpenList.some((n) => n.node === neighbor);
 
@@ -367,78 +403,11 @@ const AmbulancePathfinding = () => {
 
   useEffect(() => {
     reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startNode, goalNode]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-xl p-6 mb-6 text-white">
-        <h2 className="text-2xl font-bold mb-4">
-          📐 Fungsi Heuristik - Jarak Euclidean
-        </h2>
-
-        <div className="bg-white/10 rounded-lg p-4 mb-4 backdrop-blur">
-          <div className="text-lg font-mono mb-2">
-            h(n) = √[(x_n - x_goal)² + (y_n - y_goal)²]
-          </div>
-          <p className="text-sm opacity-90">
-            Menghitung jarak garis lurus (straight-line distance) dari node n ke
-            goal
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-            <h3 className="font-bold mb-2">📥 INPUT:</h3>
-            <ul className="text-sm space-y-1">
-              <li>
-                • <span className="font-semibold">node</span>: ID node saat ini
-                (contoh: 'A', 'M', 'S')
-              </li>
-              <li>
-                • <span className="font-semibold">goalNode</span>: ID tujuan
-                (default: 'T' - Rumah Sakit)
-              </li>
-              <li>
-                • <span className="font-semibold">cityGraph</span>: Data
-                koordinat (x, y) semua node
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
-            <h3 className="font-bold mb-2">📤 OUTPUT:</h3>
-            <ul className="text-sm space-y-1">
-              <li>
-                • <span className="font-semibold">Float number</span>: Estimasi
-                jarak ke goal
-              </li>
-              <li>
-                • <span className="font-semibold">Range</span>: [0, ~430] dalam
-                graf ini
-              </li>
-              <li>
-                • <span className="font-semibold">Sifat</span>: Semakin kecil =
-                semakin dekat ke goal
-              </li>
-              <li>
-                • <span className="font-semibold">h(T)</span>: Selalu = 0 (sudah
-                di goal)
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-yellow-400/20 border border-yellow-300/50 rounded-lg p-4 mt-4">
-          <h3 className="font-bold mb-2">💡 Kenapa Euclidean?</h3>
-          <p className="text-sm">
-            Jarak Euclidean memberikan estimasi "jarak burung terbang" yang
-            cepat dihitung (O(1)) dan memberikan panduan arah yang baik untuk
-            GBFS. Tidak harus akurat (admissible), yang penting informatif untuk
-            memilih node yang "terlihat" paling dekat.
-          </p>
-        </div>
-      </div> */}
-
       <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           🚑 Sistem Navigasi Ambulans
@@ -546,119 +515,161 @@ const AmbulancePathfinding = () => {
           className="bg-gray-50 rounded-lg p-4 mb-6 relative"
           style={{ height: "450px" }}
         >
-          <svg width="100%" height="100%" viewBox="0 0 530 400">
-            {/* Edges dengan bobot */}
-            {Object.entries(cityGraph).map(([nodeId, nodeData]) =>
-              nodeData.neighbors.map(([neighborId, distance]) => {
-                const neighbor = cityGraph[neighborId];
-                const isInPath =
-                  path.length > 0 &&
-                  path.includes(nodeId) &&
-                  path.includes(neighborId) &&
-                  Math.abs(path.indexOf(nodeId) - path.indexOf(neighborId)) ===
-                    1;
+          <svg
+            ref={svgRef}
+            width="100%"
+            height="100%"
+            viewBox="0 0 530 400"
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={endPan}
+            onMouseLeave={endPan}
+            onDoubleClick={resetView}
+            style={{
+              cursor: isPanning ? "grabbing" : "grab",
+              touchAction: "none",
+            }}
+          >
+            {/* Semua elemen digambar di dalam <g> dengan transform pan/zoom */}
+            <g transform={`translate(${offset.x}, ${offset.y}) scale(${zoom})`}>
+              {/* Edges dengan bobot */}
+              {Object.entries(cityGraph).map(([nodeId, nodeData]) =>
+                nodeData.neighbors.map(([neighborId, distance]) => {
+                  const neighbor = cityGraph[neighborId];
+                  const isInPath =
+                    path.length > 0 &&
+                    path.includes(nodeId) &&
+                    path.includes(neighborId) &&
+                    Math.abs(
+                      path.indexOf(nodeId) - path.indexOf(neighborId)
+                    ) === 1;
 
-                const midX = (nodeData.x + neighbor.x) / 2;
-                const midY = (nodeData.y + neighbor.y) / 2;
+                  const midX = (nodeData.x + neighbor.x) / 2;
+                  const midY = (nodeData.y + neighbor.y) / 2;
+
+                  return (
+                    <g key={`${nodeId}-${neighborId}`}>
+                      <line
+                        x1={nodeData.x}
+                        y1={nodeData.y}
+                        x2={neighbor.x}
+                        y2={neighbor.y}
+                        stroke={isInPath ? "#10b981" : "#d1d5db"}
+                        strokeWidth={isInPath ? 4 : 2}
+                        opacity={0.6}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <rect
+                        x={midX - 12}
+                        y={midY - 8}
+                        width="24"
+                        height="16"
+                        fill={isInPath ? "#10b981" : "#ffffff"}
+                        stroke={isInPath ? "#059669" : "#9ca3af"}
+                        strokeWidth="1"
+                        rx="3"
+                        opacity="0.95"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={midX}
+                        y={midY + 4}
+                        textAnchor="middle"
+                        fill={isInPath ? "#ffffff" : "#374151"}
+                        fontSize="8"
+                        fontWeight="bold"
+                      >
+                        {distance} km
+                      </text>
+                    </g>
+                  );
+                })
+              )}
+
+              {/* Nodes */}
+              {Object.entries(cityGraph).map(([nodeId, nodeData]) => {
+                const isStart = nodeId === startNode;
+                const isGoal = nodeId === goalNode;
+                const isCurrent = currentNode === nodeId;
+                const isVisited = visitedList.includes(nodeId);
+                const isCurrentNeighbor = currentNeighbors.includes(nodeId);
+                const isInPath = path.includes(nodeId);
+
+                let fillColor = "#9ca3af";
+                if (isStart) fillColor = "#3b82f6";
+                else if (isGoal) fillColor = "#ef4444";
+                else if (isCurrent) fillColor = "#f59e0b";
+                else if (isInPath) fillColor = "#10b981";
+                else if (isCurrentNeighbor) fillColor = "#8b5cf6";
+                else if (isVisited) fillColor = "#00bcd4";
 
                 return (
-                  <g key={`${nodeId}-${neighborId}`}>
-                    <line
-                      x1={nodeData.x}
-                      y1={nodeData.y}
-                      x2={neighbor.x}
-                      y2={neighbor.y}
-                      stroke={isInPath ? "#10b981" : "#d1d5db"}
-                      strokeWidth={isInPath ? 4 : 2}
-                      opacity={0.6}
-                    />
-                    {/* Label bobot edge */}
-                    <rect
-                      x={midX - 12}
-                      y={midY - 8}
-                      width="24"
-                      height="16"
-                      fill={isInPath ? "#10b981" : "#ffffff"}
-                      stroke={isInPath ? "#059669" : "#9ca3af"}
-                      strokeWidth="1"
-                      rx="3"
-                      opacity="0.95"
+                  <g key={nodeId}>
+                    <circle
+                      cx={nodeData.x}
+                      cy={nodeData.y}
+                      r={isCurrent ? 18 : 14}
+                      fill={fillColor}
+                      stroke={isCurrent ? "#fbbf24" : "#fff"}
+                      strokeWidth={isCurrent ? 4 : 2}
+                      vectorEffect="non-scaling-stroke"
                     />
                     <text
-                      x={midX}
-                      y={midY + 4}
+                      x={nodeData.x}
+                      y={nodeData.y + 5}
                       textAnchor="middle"
-                      fill={isInPath ? "#ffffff" : "#374151"}
-                      fontSize="8"
+                      fill="white"
+                      fontSize="14"
                       fontWeight="bold"
                     >
-                      {distance} km
+                      {nodeId}
+                    </text>
+                    <text
+                      x={nodeData.x}
+                      y={nodeData.y + 32}
+                      textAnchor="middle"
+                      fill="#374151"
+                      fontSize="10"
+                    >
+                      h={heuristic(nodeId).toFixed(0)}
                     </text>
                   </g>
                 );
-              })
-            )}
-
-            {/* Nodes */}
-            {Object.entries(cityGraph).map(([nodeId, nodeData]) => {
-              const isStart = nodeId === startNode;
-              const isGoal = nodeId === goalNode;
-              const isCurrent = currentNode === nodeId;
-              const isVisited = visitedList.includes(nodeId);
-              const isCurrentNeighbor = currentNeighbors.includes(nodeId);
-              const isInPath = path.includes(nodeId);
-
-              let fillColor = "#9ca3af";
-              if (isStart) fillColor = "#3b82f6";
-              else if (isGoal) fillColor = "#ef4444";
-              else if (isCurrent) fillColor = "#f59e0b";
-              else if (isInPath) fillColor = "#10b981";
-              else if (isCurrentNeighbor) fillColor = "#8b5cf6";
-              else if (isVisited) fillColor = "#00bcd4";
-
-              return (
-                <g key={nodeId}>
-                  <circle
-                    cx={nodeData.x}
-                    cy={nodeData.y}
-                    r={isCurrent ? 18 : 14}
-                    fill={fillColor}
-                    stroke={isCurrent ? "#fbbf24" : "#fff"}
-                    strokeWidth={isCurrent ? 4 : 2}
-                  />
-                  <text
-                    x={nodeData.x}
-                    y={nodeData.y + 5}
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="14"
-                    fontWeight="bold"
-                  >
-                    {nodeId}
-                  </text>
-                  <text
-                    x={nodeData.x}
-                    y={nodeData.y + 32}
-                    textAnchor="middle"
-                    fill="#374151"
-                    fontSize="10"
-                  >
-                    h={heuristic(nodeId).toFixed(0)}
-                  </text>
-                </g>
-              );
-            })}
+              })}
+            </g>
           </svg>
+
+          {/* Kontrol Zoom */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/90 rounded-lg shadow p-2">
+            <button onClick={zoomOut} className="px-3 py-1 border rounded">
+              –
+            </button>
+            <div className="text-sm w-16 text-center">
+              {Math.round(zoom * 100)}%
+            </div>
+            <button onClick={zoomIn} className="px-3 py-1 border rounded">
+              +
+            </button>
+            <button
+              onClick={resetView}
+              className="px-3 py-1 border rounded ml-1"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Toggle Legend */}
           <button
             onClick={() => setShowLegend((prev) => !prev)}
             className="absolute top-4 left-4 bg-gray-600 p-2 rounded text-white text-xs font-semibold"
           >
             {showLegend ? "Hide" : "Show"}
           </button>
+
           {showLegend ? (
             <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md text-sm">
               <div className="font-semibold mb-2">Keterangan:</div>
-
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-4 h-4 rounded-full bg-blue-600"></div>
                 <span>Start</span>
@@ -684,9 +695,7 @@ const AmbulancePathfinding = () => {
                 <span>Jalur</span>
               </div>
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
         </div>
 
         <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
@@ -702,4 +711,3 @@ const AmbulancePathfinding = () => {
 };
 
 export default AmbulancePathfinding;
-``;
