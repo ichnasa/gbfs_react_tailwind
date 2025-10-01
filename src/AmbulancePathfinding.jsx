@@ -532,7 +532,10 @@ const AmbulancePathfinding = () => {
             }}
           >
             {/* Semua elemen digambar di dalam <g> dengan transform pan/zoom */}
-            <g transform={`translate(${offset.x}, ${offset.y}) scale(${zoom})`}>
+            <g
+              className="select-none"
+              transform={`translate(${offset.x}, ${offset.y}) scale(${zoom})`}
+            >
               {/* Edges dengan bobot */}
               {Object.entries(cityGraph).map(([nodeId, nodeData]) =>
                 nodeData.neighbors.map(([neighborId, distance]) => {
